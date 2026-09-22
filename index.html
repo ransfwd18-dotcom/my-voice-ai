@@ -1,0 +1,4129 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Voice AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b0f14;
+            color: white;
+        }
+
+        .container {
+            width: min(1200px, 94%);
+            margin: 30px auto;
+        }
+
+        h1 {
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #9aa4b2;
+            margin-bottom: 25px;
+        }
+
+        .panel {
+            background: #111720;
+            border: 1px solid #202a36;
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            resize: vertical;
+            background: #0a0e13;
+            color: white;
+            border: 1px solid #2a3542;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #00d4ff;
+        }
+
+        .voice-library {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .voice-card {
+            background: #0c1219;
+            border: 1px solid #26313d;
+            border-radius: 14px;
+            padding: 16px;
+            transition: 0.2s;
+        }
+
+        .voice-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-2px);
+        }
+
+        .voice-card.selected {
+            border-color: #00d4ff;
+            box-shadow: 0 0 18px rgba(0, 212, 255, 0.12);
+        }
+
+        .voice-name {
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .voice-info {
+            color: #8e9aa8;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .voice-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 9px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            background: #1c2733;
+        }
+
+        button:hover {
+            background: #263645;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .primary {
+            background: #00a8cc;
+        }
+
+        .primary:hover {
+            background: #00c4ed;
+        }
+
+        .selected-label,
+        .previewing-label {
+            display: none;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .selected-label {
+            color: #00d4ff;
+        }
+
+        .previewing-label {
+            color: #55ff9a;
+        }
+
+        .voice-card.selected .selected-label {
+            display: block;
+        }
+
+        .voice-card.previewing .previewing-label {
+            display: block;
+        }
+
+        /* REAL-TIME AUDIO WAVEFORM */
+
+        .audio-wave {
+            display: none;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0 12px;
+        }
+
+        .voice-card.previewing .audio-wave {
+            display: flex;
+        }
+
+        .audio-wave span {
+            display: block;
+            width: 5px;
+            height: 8px;
+            min-height: 8px;
+            max-height: 34px;
+            border-radius: 5px;
+            background: #00d4ff;
+            box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
+            transition: height 0.06s linear;
+            will-change: height;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .control {
+            background: #0c1219;
+            border: 1px solid #26313d;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        label {
+            display: block;
+            color: #aeb8c5;
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+
+        select {
+            width: 100%;
+            background: #080c11;
+            color: white;
+            border: 1px solid #2a3542;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .slider-value {
+            color: #00d4ff;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .download {
+            display: inline-block;
+            margin-top: 12px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .status {
+            margin-top: 12px;
+            color: #8e9aa8;
+            font-size: 13px;
+        }
+
+        .status.success {
+            color: #55ff9a;
+        }
+
+        .status.error {
+            color: #ff6b6b;
+        }
+
+        /* =====================================================
+           VOICE HISTORY
+        ===================================================== */
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .history-header h2 {
+            margin: 0;
+        }
+
+        .history-empty {
+            color: #8e9aa8;
+            padding: 20px 0 5px;
+            text-align: center;
+        }
+
+        .history-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .history-item {
+            background: #0c1219;
+            border: 1px solid #26313d;
+            border-radius: 13px;
+            padding: 15px;
+        }
+
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .history-text {
+            font-size: 15px;
+            line-height: 1.5;
+            word-break: break-word;
+            color: #f4f7fa;
+        }
+
+        .history-meta {
+            color: #8e9aa8;
+            font-size: 12px;
+            margin-top: 7px;
+            line-height: 1.5;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .history-actions button {
+            padding: 8px 11px;
+            font-size: 12px;
+        }
+
+        .history-play {
+            background: #087f9d;
+        }
+
+        .history-delete {
+            background: #48232a;
+        }
+
+        .history-delete:hover {
+            background: #6a2d37;
+        }
+
+        .history-count {
+            color: #00d4ff;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .history-now-playing {
+            color: #55ff9a;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .history-item.playing .history-now-playing {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 92%;
+            }
+
+            .voice-actions {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .history-top {
+                flex-direction: column;
+            }
+
+            .history-actions button {
+                width: auto;
+            }
+        }
+    </style>
+<!-- ACTUAL HISTORY PANEL HIDDEN -->﻿<style id="hideActualHistoryPanel">
+.panel:has(.history-header) {
+    display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>🎙️ My Voice AI</h1>
+
+    <div class="subtitle">
+        Generate realistic AI speech with your own voice settings.
+    </div>
+
+
+    <!-- TEXT -->
+    <div class="panel">
+
+        <h2>Text</h2>
+
+        <textarea
+            id="textInput"
+            placeholder="Type something you want the AI voice to say..."
+        ></textarea>
+
+    </div>
+
+
+    <!-- VOICE LIBRARY -->
+    <div class="panel">
+
+        <h2>Voice Library</h2>
+
+        <div class="voice-library">
+
+            <!-- ARIA -->
+            <div class="voice-card" data-voice="en-US-AriaNeural">
+
+                <div class="voice-name">
+                    Aria
+                </div>
+
+                <div class="voice-info">
+                    Female • US English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-US-AriaNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-US-AriaNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- GUY -->
+            <div class="voice-card" data-voice="en-US-GuyNeural">
+
+                <div class="voice-name">
+                    Guy
+                </div>
+
+                <div class="voice-info">
+                    Male • US English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-US-GuyNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-US-GuyNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- JENNY -->
+            <div class="voice-card" data-voice="en-US-JennyNeural">
+
+                <div class="voice-name">
+                    Jenny
+                </div>
+
+                <div class="voice-info">
+                    Female • US English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-US-JennyNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-US-JennyNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- DAVIS -->
+            <div class="voice-card" data-voice="en-US-AndrewNeural">
+
+                <div class="voice-name">
+                    Davis
+                </div>
+
+                <div class="voice-info">
+                    Male • US English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-US-AndrewNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-US-AndrewNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- SONIA -->
+            <div class="voice-card" data-voice="en-GB-SoniaNeural">
+
+                <div class="voice-name">
+                    Sonia
+                </div>
+
+                <div class="voice-info">
+                    Female • UK English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-GB-SoniaNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-GB-SoniaNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- RYAN -->
+            <div class="voice-card" data-voice="en-GB-RyanNeural">
+
+                <div class="voice-name">
+                    Ryan
+                </div>
+
+                <div class="voice-info">
+                    Male • UK English
+                </div>
+
+                <div class="audio-wave">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="selected-label">
+                    ✓ Selected
+                </div>
+
+                <div class="previewing-label">
+                    ● Previewing
+                </div>
+
+                <div class="voice-actions">
+
+                    <button onclick="selectVoice('en-GB-RyanNeural')">
+                        Select
+                    </button>
+
+                    <button onclick="previewVoice('en-GB-RyanNeural')">
+                        Preview
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- VOICE STUDIO -->
+    <div class="panel">
+
+        <h2>Voice Studio</h2>
+
+        <div class="controls">
+
+            <!-- VOICE -->
+            <div class="control">
+
+                <label>
+                    Voice
+                </label>
+
+                <select id="voiceSelect">
+
+                    <option value="en-US-AriaNeural">
+                        Aria
+                    </option>
+
+                    <option value="en-US-GuyNeural">
+                        Guy
+                    </option>
+
+                    <option value="en-US-JennyNeural">
+                        Jenny
+                    </option>
+
+                    <option value="en-US-AndrewNeural">
+                        Davis
+                    </option>
+
+                    <option value="en-GB-SoniaNeural">
+                        Sonia
+                    </option>
+
+                    <option value="en-GB-RyanNeural">
+                        Ryan
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- PRESET -->
+            <div class="control">
+
+                <label>
+                    Preset
+                </label>
+
+                <select id="presetSelect">
+
+                    <option value="custom">
+                        Custom
+                    </option>
+
+                    <option value="natural">
+                        Natural
+                    </option>
+
+                    <option value="energetic">
+                        Energetic
+                    </option>
+
+                    <option value="calm">
+                        Calm
+                    </option>
+
+                    <option value="narrator">
+                        Narrator
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- EMOTION -->
+            <div class="control">
+
+                <label>
+                    Emotion
+                </label>
+
+                <select id="emotionSelect">
+
+                    <option value="neutral">
+                        Neutral
+                    </option>
+
+                    <option value="happy">
+                        Happy
+                    </option>
+
+                    <option value="sad">
+                        Sad
+                    </option>
+
+                    <option value="angry">
+                        Angry
+                    </option>
+
+                    <option value="excited">
+                        Excited
+                    </option>
+
+                    <option value="calm">
+                        Calm
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- STYLE -->
+            <div class="control">
+
+                <label>
+                    Style
+                </label>
+
+                <select id="styleSelect">
+
+                    <option value="default">
+                        Default
+                    </option>
+
+                    <option value="newscast">
+                        Newscast
+                    </option>
+
+                    <option value="narration">
+                        Narration
+                    </option>
+
+                    <option value="conversation">
+                        Conversation
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- SPEED -->
+            <div class="control">
+
+                <label>
+                    Speed
+                </label>
+
+                <input
+                    id="speedSlider"
+                    type="range"
+                    min="50"
+                    max="150"
+                    value="100"
+                >
+
+                <div
+                    class="slider-value"
+                    id="speedValue"
+                >
+                    100%
+                </div>
+
+            </div>
+
+
+            <!-- PITCH -->
+            <div class="control">
+
+                <label>
+                    Pitch
+                </label>
+
+                <input
+                    id="pitchSlider"
+                    type="range"
+                    min="-20"
+                    max="20"
+                    value="0"
+                >
+
+                <div
+                    class="slider-value"
+                    id="pitchValue"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <!-- VOLUME -->
+            <div class="control">
+
+                <label>
+                    Volume
+                </label>
+
+                <input
+                    id="volumeSlider"
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="100"
+                >
+
+                <div
+                    class="slider-value"
+                    id="volumeValue"
+                >
+                    100%
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="buttons">
+
+            <button
+                class="primary"
+                id="generateBtn"
+            >
+                🎙️ Generate Speech
+            </button>
+
+            <button
+                id="previewSelectedBtn"
+            >
+                ▶ Preview Selected Voice
+            </button>
+
+        </div>
+
+
+        <div
+            class="status"
+            id="status"
+        >
+            Ready.
+        </div>
+
+    </div>
+
+
+    <!-- AUDIO OUTPUT -->
+    <div class="panel">
+
+        <h2>
+            Audio Output
+        </h2>
+
+        <audio
+            id="audioPlayer"
+            controls
+        ></audio>
+
+        <a
+            id="downloadLink"
+            class="download"
+            style="display:none;"
+            download="my-voice-ai.mp3"
+        >
+            ⬇ Download Audio
+        </a>
+
+    </div>
+
+
+    <!-- VOICE HISTORY -->
+    <div class="panel">
+
+        <div class="history-header">
+
+            <div>
+                <h2>🕘 Voice History</h2>
+
+                <div
+                    class="history-count"
+                    id="historyCount"
+                >
+                    0 generations
+                </div>
+            </div>
+
+            <button
+                id="clearHistoryBtn"
+            >
+                🗑 Clear History
+            </button>
+
+        </div>
+
+
+        <div
+            class="history-empty"
+            id="historyEmpty"
+        >
+            Your generated voices will appear here.
+        </div>
+
+
+        <div
+            class="history-list"
+            id="historyList"
+        ></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API_URL = "http://127.0.0.1:8000";
+
+const HISTORY_KEY =
+    "myVoiceAI_history_v1";
+
+const MAX_HISTORY =
+    20;
+
+
+/* ============================================================
+   ELEMENTS
+============================================================ */
+
+const textInput =
+    document.getElementById("textInput");
+
+const voiceSelect =
+    document.getElementById("voiceSelect");
+
+const presetSelect =
+    document.getElementById("presetSelect");
+
+const emotionSelect =
+    document.getElementById("emotionSelect");
+
+const styleSelect =
+    document.getElementById("styleSelect");
+
+const speedSlider =
+    document.getElementById("speedSlider");
+
+const pitchSlider =
+    document.getElementById("pitchSlider");
+
+const volumeSlider =
+    document.getElementById("volumeSlider");
+
+const speedValue =
+    document.getElementById("speedValue");
+
+const pitchValue =
+    document.getElementById("pitchValue");
+
+const volumeValue =
+    document.getElementById("volumeValue");
+
+const generateBtn =
+    document.getElementById("generateBtn");
+
+const previewSelectedBtn =
+    document.getElementById("previewSelectedBtn");
+
+const audioPlayer =
+    document.getElementById("audioPlayer");
+
+const downloadLink =
+    document.getElementById("downloadLink");
+
+const statusText =
+    document.getElementById("status");
+
+const historyList =
+    document.getElementById("historyList");
+
+const historyEmpty =
+    document.getElementById("historyEmpty");
+
+const historyCount =
+    document.getElementById("historyCount");
+
+const clearHistoryBtn =
+    document.getElementById("clearHistoryBtn");
+
+
+/* ============================================================
+   REAL-TIME AUDIO VISUALIZER
+============================================================ */
+
+let audioContext = null;
+let analyser = null;
+let audioSource = null;
+let waveformAnimationId = null;
+let activePreviewCard = null;
+
+
+function setupAudioVisualizer() {
+
+    if (audioSource) {
+        return;
+    }
+
+    try {
+
+        const AudioContextClass =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+
+            console.warn(
+                "Web Audio API is not supported."
+            );
+
+            return;
+        }
+
+        audioContext =
+            new AudioContextClass();
+
+        analyser =
+            audioContext.createAnalyser();
+
+        analyser.fftSize = 128;
+
+        analyser.smoothingTimeConstant =
+            0.72;
+
+        audioSource =
+            audioContext.createMediaElementSource(
+                audioPlayer
+            );
+
+        audioSource.connect(analyser);
+
+        analyser.connect(
+            audioContext.destination
+        );
+
+        console.log(
+            "Real-time audio visualizer ready."
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Audio visualizer could not start:",
+            error
+        );
+
+    }
+
+}
+
+
+async function resumeAudioContext() {
+
+    if (!audioContext) {
+        return;
+    }
+
+    try {
+
+        if (
+            audioContext.state ===
+            "suspended"
+        ) {
+
+            await audioContext.resume();
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Could not resume audio context:",
+            error
+        );
+
+    }
+
+}
+
+
+function startAudioVisualizer(card) {
+
+    if (!card || !analyser) {
+        return;
+    }
+
+    cancelAnimationFrame(
+        waveformAnimationId
+    );
+
+    const bars =
+        Array.from(
+            card.querySelectorAll(
+                ".audio-wave span"
+            )
+        );
+
+    if (!bars.length) {
+        return;
+    }
+
+    const dataArray =
+        new Uint8Array(
+            analyser.frequencyBinCount
+        );
+
+
+    function drawWave() {
+
+        if (
+            !card.classList.contains(
+                "previewing"
+            ) ||
+            audioPlayer.paused ||
+            audioPlayer.ended
+        ) {
+
+            bars.forEach(bar => {
+                bar.style.height = "8px";
+            });
+
+            waveformAnimationId = null;
+
+            return;
+
+        }
+
+
+        analyser.getByteFrequencyData(
+            dataArray
+        );
+
+
+        bars.forEach((bar, index) => {
+
+            const start =
+                Math.floor(
+                    index *
+                    dataArray.length /
+                    bars.length
+                );
+
+            const end =
+                Math.max(
+                    start + 1,
+                    Math.floor(
+                        (index + 1) *
+                        dataArray.length /
+                        bars.length
+                    )
+                );
+
+
+            let total = 0;
+
+            for (
+                let i = start;
+                i < end;
+                i++
+            ) {
+
+                total += dataArray[i];
+
+            }
+
+
+            const average =
+                total /
+                (end - start);
+
+
+            const height =
+                Math.max(
+                    7,
+                    Math.min(
+                        34,
+                        7 + average * 0.32
+                    )
+                );
+
+
+            bar.style.height =
+                `${height}px`;
+
+        });
+
+
+        waveformAnimationId =
+            requestAnimationFrame(
+                drawWave
+            );
+
+    }
+
+
+    drawWave();
+
+}
+
+
+function stopAudioVisualizer() {
+
+    cancelAnimationFrame(
+        waveformAnimationId
+    );
+
+    waveformAnimationId = null;
+
+
+    document
+        .querySelectorAll(
+            ".audio-wave span"
+        )
+        .forEach(bar => {
+
+            bar.style.height =
+                "8px";
+
+        });
+
+}
+
+
+/* ============================================================
+   AUDIO EVENTS
+============================================================ */
+
+audioPlayer.crossOrigin =
+    "anonymous";
+
+
+audioPlayer.addEventListener(
+    "play",
+    async () => {
+
+        await resumeAudioContext();
+
+        if (activePreviewCard) {
+
+            startAudioVisualizer(
+                activePreviewCard
+            );
+
+        }
+
+    }
+);
+
+
+audioPlayer.addEventListener(
+    "ended",
+    () => {
+
+        stopAudioVisualizer();
+
+        clearHistoryPlayingState();
+
+    }
+);
+
+
+audioPlayer.addEventListener(
+    "pause",
+    () => {
+
+        stopAudioVisualizer();
+
+    }
+);
+
+
+audioPlayer.addEventListener(
+    "error",
+    () => {
+
+        stopAudioVisualizer();
+
+        clearHistoryPlayingState();
+
+    }
+);
+
+
+/* ============================================================
+   EMOTIONS
+============================================================ */
+
+const emotions = {
+
+    neutral: {
+        speed: 100,
+        pitch: 0,
+        volume: 100
+    },
+
+    happy: {
+        speed: 108,
+        pitch: 4,
+        volume: 100
+    },
+
+    sad: {
+        speed: 90,
+        pitch: -4,
+        volume: 90
+    },
+
+    angry: {
+        speed: 108,
+        pitch: 2,
+        volume: 100
+    },
+
+    excited: {
+        speed: 115,
+        pitch: 5,
+        volume: 100
+    },
+
+    calm: {
+        speed: 90,
+        pitch: -2,
+        volume: 90
+    }
+
+};
+
+
+/* ============================================================
+   PRESETS
+============================================================ */
+
+const presets = {
+
+    natural: {
+        emotion: "neutral",
+        style: "default",
+        speed: 100,
+        pitch: 0,
+        volume: 100
+    },
+
+    energetic: {
+        emotion: "excited",
+        style: "conversation",
+        speed: 112,
+        pitch: 3,
+        volume: 100
+    },
+
+    calm: {
+        emotion: "calm",
+        style: "narration",
+        speed: 90,
+        pitch: -2,
+        volume: 92
+    },
+
+    narrator: {
+        emotion: "neutral",
+        style: "narration",
+        speed: 96,
+        pitch: -1,
+        volume: 100
+    }
+
+};
+
+
+/* ============================================================
+   SLIDER LABELS
+============================================================ */
+
+function updateSliderLabels() {
+
+    speedValue.textContent =
+        `${speedSlider.value}%`;
+
+    pitchValue.textContent =
+        `${pitchSlider.value}`;
+
+    volumeValue.textContent =
+        `${volumeSlider.value}%`;
+
+}
+
+
+/* ============================================================
+   SLIDERS
+============================================================ */
+
+speedSlider.addEventListener(
+    "input",
+    () => {
+
+        updateSliderLabels();
+
+        presetSelect.value =
+            "custom";
+
+    }
+);
+
+
+pitchSlider.addEventListener(
+    "input",
+    () => {
+
+        updateSliderLabels();
+
+        presetSelect.value =
+            "custom";
+
+    }
+);
+
+
+volumeSlider.addEventListener(
+    "input",
+    () => {
+
+        updateSliderLabels();
+
+        presetSelect.value =
+            "custom";
+
+    }
+);
+
+
+/* ============================================================
+   EMOTION SELECT
+============================================================ */
+
+emotionSelect.addEventListener(
+    "change",
+    () => {
+
+        const emotion =
+            emotions[
+                emotionSelect.value
+            ];
+
+        if (!emotion) {
+            return;
+        }
+
+
+        speedSlider.value =
+            emotion.speed;
+
+        pitchSlider.value =
+            emotion.pitch;
+
+        volumeSlider.value =
+            Math.min(
+                100,
+                emotion.volume
+            );
+
+
+        presetSelect.value =
+            "custom";
+
+
+        updateSliderLabels();
+
+    }
+);
+
+
+/* ============================================================
+   PRESET SELECT
+============================================================ */
+
+presetSelect.addEventListener(
+    "change",
+    () => {
+
+        const preset =
+            presets[
+                presetSelect.value
+            ];
+
+        if (!preset) {
+            return;
+        }
+
+
+        emotionSelect.value =
+            preset.emotion;
+
+        styleSelect.value =
+            preset.style;
+
+        speedSlider.value =
+            preset.speed;
+
+        pitchSlider.value =
+            preset.pitch;
+
+        volumeSlider.value =
+            preset.volume;
+
+
+        updateSliderLabels();
+
+    }
+);
+
+
+/* ============================================================
+   VOICE CARD SELECTION
+============================================================ */
+
+function updateSelectedVoiceCard() {
+
+    document
+        .querySelectorAll(
+            ".voice-card"
+        )
+        .forEach(card => {
+
+            const voice =
+                card.dataset.voice;
+
+            card.classList.toggle(
+                "selected",
+                voice === voiceSelect.value
+            );
+
+        });
+
+}
+
+
+function selectVoice(voice) {
+
+    voiceSelect.value =
+        voice;
+
+    updateSelectedVoiceCard();
+
+    statusText.textContent =
+        "Voice selected.";
+
+    statusText.className =
+        "status";
+
+}
+
+
+function stopAllPreviewIndicators() {
+
+    document
+        .querySelectorAll(
+            ".voice-card"
+        )
+        .forEach(card => {
+
+            card.classList.remove(
+                "previewing"
+            );
+
+        });
+
+    activePreviewCard =
+        null;
+
+    stopAudioVisualizer();
+
+}
+
+
+/* ============================================================
+   VOICE HISTORY STORAGE
+============================================================ */
+
+function getHistory() {
+
+    try {
+
+        const saved =
+            localStorage.getItem(
+                HISTORY_KEY
+            );
+
+        if (!saved) {
+            return [];
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        console.warn(
+            "Could not read voice history:",
+            error
+        );
+
+        return [];
+
+    }
+
+}
+
+
+function saveHistory(history) {
+
+    try {
+
+        localStorage.setItem(
+            HISTORY_KEY,
+            JSON.stringify(history)
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Could not save voice history:",
+            error
+        );
+
+    }
+
+}
+
+
+function addToHistory(item) {
+
+    const history =
+        getHistory();
+
+    history.unshift(item);
+
+    const limitedHistory =
+        history.slice(
+            0,
+            MAX_HISTORY
+        );
+
+    saveHistory(
+        limitedHistory
+    );
+
+    renderHistory();
+
+}
+
+
+function formatHistoryDate(timestamp) {
+
+    try {
+
+        return new Date(
+            timestamp
+        ).toLocaleString();
+
+    } catch (_) {
+
+        return "Recently";
+
+    }
+
+}
+
+
+function voiceDisplayName(voice) {
+
+    const names = {
+
+        "en-US-AriaNeural":
+            "Aria",
+
+        "en-US-GuyNeural":
+            "Guy",
+
+        "en-US-JennyNeural":
+            "Jenny",
+
+        "en-US-AndrewNeural":
+            "Davis",
+
+        "en-GB-SoniaNeural":
+            "Sonia",
+
+        "en-GB-RyanNeural":
+            "Ryan"
+
+    };
+
+    return names[voice] || voice;
+
+}
+
+
+function escapeHtml(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+function clearHistoryPlayingState() {
+
+    document
+        .querySelectorAll(
+            ".history-item"
+        )
+        .forEach(item => {
+
+            item.classList.remove(
+                "playing"
+            );
+
+        });
+
+}
+
+
+function renderHistory() {
+
+    const history =
+        getHistory();
+
+    historyList.innerHTML =
+        "";
+
+    historyCount.textContent =
+        `${history.length} ${
+            history.length === 1
+                ? "generation"
+                : "generations"
+        }`;
+
+
+    if (!history.length) {
+
+        historyEmpty.style.display =
+            "block";
+
+        return;
+
+    }
+
+
+    historyEmpty.style.display =
+        "none";
+
+
+    history.forEach(item => {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "history-item";
+
+
+        const safeText =
+            escapeHtml(
+                item.text
+            );
+
+
+        card.innerHTML = `
+
+            <div class="history-top">
+
+                <div>
+
+                    <div class="history-text">
+                        ${safeText}
+                    </div>
+
+                    <div class="history-meta">
+                        🎙️ ${escapeHtml(
+                            voiceDisplayName(
+                                item.voice
+                            )
+                        )}
+                        •
+                        ${escapeHtml(
+                            item.emotion
+                        )}
+                        •
+                        ${escapeHtml(
+                            item.style
+                        )}
+                        •
+                        Speed ${escapeHtml(
+                            item.speed
+                        )}%
+                        •
+                        Pitch ${escapeHtml(
+                            item.pitch
+                        )}
+                        •
+                        Volume ${escapeHtml(
+                            item.volume
+                        )}%
+                        <br>
+                        🕒 ${escapeHtml(
+                            formatHistoryDate(
+                                item.createdAt
+                            )
+                        )}
+                    </div>
+
+                    <div class="history-now-playing">
+                        ● Playing
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="history-actions">
+
+                <button
+                    class="history-play"
+                    data-history-action="play"
+                    data-id="${item.id}"
+                >
+                    ▶ Play
+                </button>
+
+                <button
+                    data-history-action="load"
+                    data-id="${item.id}"
+                >
+                    ↩ Load Settings
+                </button>
+
+                <button
+                    data-history-action="download"
+                    data-id="${item.id}"
+                >
+                    ⬇ Download
+                </button>
+
+                <button
+                    class="history-delete"
+                    data-history-action="delete"
+                    data-id="${item.id}"
+                >
+                    🗑 Delete
+                </button>
+
+            </div>
+
+        `;
+
+
+        historyList.appendChild(
+            card
+        );
+
+    });
+
+}
+
+
+function findHistoryItem(id) {
+
+    return getHistory().find(
+        item =>
+            item.id === id
+    );
+
+}
+
+
+function playHistoryItem(item) {
+
+    if (!item || !item.audioUrl) {
+        return;
+    }
+
+
+    stopAllPreviewIndicators();
+
+    clearHistoryPlayingState();
+
+
+    audioPlayer.src =
+        item.audioUrl;
+
+    audioPlayer.load();
+
+
+    downloadLink.href =
+        item.audioUrl;
+
+    downloadLink.style.display =
+        "inline-block";
+
+
+    const historyCards =
+        document.querySelectorAll(
+            ".history-item"
+        );
+
+
+    const history =
+        getHistory();
+
+
+    history.forEach((historyItem, index) => {
+
+        if (
+            historyItem.id ===
+            item.id
+        ) {
+
+            const card =
+                historyCards[index];
+
+            if (card) {
+
+                card.classList.add(
+                    "playing"
+                );
+
+            }
+
+        }
+
+    });
+
+
+    audioPlayer.play()
+        .then(() => {
+
+            statusText.textContent =
+                "Playing from voice history.";
+
+            statusText.className =
+                "status success";
+
+        })
+        .catch(error => {
+
+            console.error(
+                "History playback error:",
+                error
+            );
+
+            statusText.textContent =
+                "Could not play this history item.";
+
+            statusText.className =
+                "status error";
+
+            clearHistoryPlayingState();
+
+        });
+
+}
+
+
+function loadHistorySettings(item) {
+
+    if (!item) {
+        return;
+    }
+
+
+    textInput.value =
+        item.text;
+
+    voiceSelect.value =
+        item.voice;
+
+    emotionSelect.value =
+        item.emotion;
+
+    styleSelect.value =
+        item.style;
+
+    speedSlider.value =
+        item.speed;
+
+    pitchSlider.value =
+        item.pitch;
+
+    volumeSlider.value =
+        item.volume;
+
+
+    presetSelect.value =
+        "custom";
+
+
+    updateSliderLabels();
+
+    updateSelectedVoiceCard();
+
+
+    statusText.textContent =
+        "Voice history settings loaded.";
+
+    statusText.className =
+        "status success";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+function downloadHistoryItem(item) {
+
+    if (!item || !item.audioUrl) {
+        return;
+    }
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+    link.href =
+        item.audioUrl;
+
+    link.download =
+        "my-voice-ai-history.mp3";
+
+    document.body.appendChild(
+        link
+    );
+
+    link.click();
+
+    link.remove();
+
+}
+
+
+function deleteHistoryItem(id) {
+
+    const history =
+        getHistory().filter(
+            item =>
+                item.id !== id
+        );
+
+    saveHistory(
+        history
+    );
+
+    renderHistory();
+
+}
+
+
+historyList.addEventListener(
+    "click",
+    event => {
+
+        const button =
+            event.target.closest(
+                "button"
+            );
+
+        if (!button) {
+            return;
+        }
+
+
+        const id =
+            button.dataset.id;
+
+        const action =
+            button.dataset.historyAction;
+
+
+        const item =
+            findHistoryItem(
+                id
+            );
+
+
+        if (!item) {
+            return;
+        }
+
+
+        if (action === "play") {
+
+            playHistoryItem(
+                item
+            );
+
+        }
+
+
+        if (action === "load") {
+
+            loadHistorySettings(
+                item
+            );
+
+        }
+
+
+        if (action === "download") {
+
+            downloadHistoryItem(
+                item
+            );
+
+        }
+
+
+        if (action === "delete") {
+
+            deleteHistoryItem(
+                id
+            );
+
+        }
+
+    }
+);
+
+
+clearHistoryBtn.addEventListener(
+    "click",
+    () => {
+
+        const history =
+            getHistory();
+
+        if (!history.length) {
+            return;
+        }
+
+
+        const confirmed =
+            confirm(
+                "Clear all voice history?"
+            );
+
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        localStorage.removeItem(
+            HISTORY_KEY
+        );
+
+
+        renderHistory();
+
+
+        statusText.textContent =
+            "Voice history cleared.";
+
+        statusText.className =
+            "status success";
+
+    }
+);
+
+
+/* ============================================================
+   GENERATE SPEECH
+============================================================ */
+
+async function generateSpeech(
+    customText = null,
+    customVoice = null,
+    saveToHistory = true
+) {
+
+    const text =
+        customText !== null
+            ? customText
+            : textInput.value.trim();
+
+
+    const voice =
+        customVoice !== null
+            ? customVoice
+            : voiceSelect.value;
+
+
+    if (!text) {
+
+        statusText.textContent =
+            "Please enter some text first.";
+
+        statusText.className =
+            "status error";
+
+        return false;
+
+    }
+
+
+    setupAudioVisualizer();
+
+    await resumeAudioContext();
+
+
+    statusText.textContent =
+        "Generating speech...";
+
+    statusText.className =
+        "status";
+
+
+    generateBtn.disabled =
+        true;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/generate`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        text: text,
+
+                        voice: voice,
+
+                        style:
+                            styleSelect.value,
+
+                        emotion:
+                            emotionSelect.value,
+
+                        speed:
+                            String(
+                                Number(
+                                    speedSlider.value
+                                ) - 100
+                            ),
+
+                        pitch:
+                            String(
+                                pitchSlider.value
+                            ),
+
+                        volume:
+                            String(
+                                Number(
+                                    volumeSlider.value
+                                ) - 100
+                            )
+
+                    })
+                }
+            );
+
+
+        if (!response.ok) {
+
+            let errorMessage =
+                `Server returned ${response.status}`;
+
+
+            try {
+
+                const errorData =
+                    await response.json();
+
+                if (errorData.detail) {
+                    errorMessage =
+                        errorData.detail;
+                }
+
+            } catch (_) {
+                // Keep original error.
+            }
+
+
+            throw new Error(
+                errorMessage
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.filename) {
+
+            throw new Error(
+                "Backend did not return an audio filename."
+            );
+
+        }
+
+
+        const fullAudioUrl =
+            `${API_URL}/audio/${encodeURIComponent(
+                data.filename
+            )}`;
+
+
+        console.log(
+            "Generated audio:",
+            fullAudioUrl
+        );
+
+
+        audioPlayer.src =
+            fullAudioUrl;
+
+        audioPlayer.load();
+
+
+        downloadLink.href =
+            fullAudioUrl;
+
+        downloadLink.style.display =
+            "inline-block";
+
+
+        /*
+         * SAVE GENERATION TO HISTORY.
+         *
+         * Preview voices are NOT saved.
+         * Normal Generate Speech is saved.
+         */
+
+        if (
+            saveToHistory &&
+            customText === null &&
+            customVoice === null
+        ) {
+
+            addToHistory({
+
+                id:
+                    `${Date.now()}-${Math.random()
+                        .toString(36)
+                        .slice(2)}`,
+
+                text:
+                    text,
+
+                voice:
+                    voice,
+
+                emotion:
+                    emotionSelect.value,
+
+                style:
+                    styleSelect.value,
+
+                speed:
+                    speedSlider.value,
+
+                pitch:
+                    pitchSlider.value,
+
+                volume:
+                    volumeSlider.value,
+
+                audioUrl:
+                    fullAudioUrl,
+
+                createdAt:
+                    new Date().toISOString()
+
+            });
+
+        }
+
+
+        await resumeAudioContext();
+
+
+        await audioPlayer.play();
+
+
+        statusText.textContent =
+            "Playing generated speech.";
+
+        statusText.className =
+            "status success";
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "Speech generation error:",
+            error
+        );
+
+
+        statusText.textContent =
+            `Error: ${error.message}`;
+
+        statusText.className =
+            "status error";
+
+
+        stopAudioVisualizer();
+
+
+        return false;
+
+
+    } finally {
+
+        generateBtn.disabled =
+            false;
+
+    }
+
+}
+
+
+/* ============================================================
+   WAIT FOR AUDIO TO FINISH
+============================================================ */
+
+function waitForAudioToFinish() {
+
+    return new Promise(resolve => {
+
+        if (audioPlayer.ended) {
+
+            resolve();
+
+            return;
+
+        }
+
+
+        const finished =
+            () => {
+
+                cleanup();
+
+                resolve();
+
+            };
+
+
+        const cleanup =
+            () => {
+
+                audioPlayer.removeEventListener(
+                    "ended",
+                    finished
+                );
+
+                audioPlayer.removeEventListener(
+                    "error",
+                    finished
+                );
+
+            };
+
+
+        audioPlayer.addEventListener(
+            "ended",
+            finished
+        );
+
+        audioPlayer.addEventListener(
+            "error",
+            finished
+        );
+
+    });
+
+}
+
+
+/* ============================================================
+   NORMAL GENERATE BUTTON
+============================================================ */
+
+generateBtn.addEventListener(
+    "click",
+    async () => {
+
+        stopAllPreviewIndicators();
+
+        await generateSpeech();
+
+    }
+);
+
+
+/* ============================================================
+   PREVIEW VOICE
+============================================================ */
+
+async function previewVoice(voice) {
+
+    stopAllPreviewIndicators();
+
+
+    const card =
+        document.querySelector(
+            `.voice-card[data-voice="${voice}"]`
+        );
+
+
+    if (!card) {
+        return;
+    }
+
+
+    card.classList.add(
+        "previewing"
+    );
+
+
+    activePreviewCard =
+        card;
+
+
+    statusText.textContent =
+        "Generating voice preview.";
+
+    statusText.className =
+        "status";
+
+
+    const previewText =
+        "Hello! This is a preview of my voice. How does it sound?";
+
+
+    const success =
+        await generateSpeech(
+            previewText,
+            voice,
+            false
+        );
+
+
+    if (success) {
+
+        await resumeAudioContext();
+
+        startAudioVisualizer(
+            card
+        );
+
+        await waitForAudioToFinish();
+
+    }
+
+
+    card.classList.remove(
+        "previewing"
+    );
+
+
+    if (
+        activePreviewCard === card
+    ) {
+
+        activePreviewCard =
+            null;
+
+    }
+
+
+    stopAudioVisualizer();
+
+
+    statusText.textContent =
+        "Ready.";
+
+    statusText.className =
+        "status";
+
+}
+
+
+/* ============================================================
+   PREVIEW SELECTED VOICE
+============================================================ */
+
+previewSelectedBtn.addEventListener(
+    "click",
+    async () => {
+
+        stopAllPreviewIndicators();
+
+
+        const voice =
+            voiceSelect.value;
+
+
+        const card =
+            document.querySelector(
+                `.voice-card[data-voice="${voice}"]`
+            );
+
+
+        if (card) {
+
+            card.classList.add(
+                "previewing"
+            );
+
+            activePreviewCard =
+                card;
+
+        }
+
+
+        const previewText =
+            "Hello! This is a preview of my selected AI voice. I hope you like how I sound.";
+
+
+        const success =
+            await generateSpeech(
+                previewText,
+                voice,
+                false
+            );
+
+
+        if (success) {
+
+            if (card) {
+
+                await resumeAudioContext();
+
+                startAudioVisualizer(
+                    card
+                );
+
+            }
+
+            await waitForAudioToFinish();
+
+        }
+
+
+        if (card) {
+
+            card.classList.remove(
+                "previewing"
+            );
+
+        }
+
+
+        activePreviewCard =
+            null;
+
+
+        stopAudioVisualizer();
+
+
+        statusText.textContent =
+            "Ready.";
+
+        statusText.className =
+            "status";
+
+    }
+);
+
+
+/* ============================================================
+   VOICE SELECT CHANGE
+============================================================ */
+
+voiceSelect.addEventListener(
+    "change",
+    () => {
+
+        updateSelectedVoiceCard();
+
+    }
+);
+
+
+/* ============================================================
+   INITIAL SETUP
+============================================================ */
+
+updateSliderLabels();
+
+updateSelectedVoiceCard();
+
+renderHistory();
+
+console.log(
+    "My Voice AI frontend loaded successfully."
+);
+
+</script>
+<script>
+(function () {
+    const presetSelect = document.getElementById("presetSelect");
+    const voiceSelect = document.getElementById("voiceSelect");
+
+    if (!presetSelect || !voiceSelect) {
+        console.error("My Voice AI: preset or voice selector not found.");
+        return;
+    }
+
+    // Add Stoic Narration to the existing preset dropdown
+    if (!presetSelect.querySelector('option[value="stoic"]')) {
+        const option = document.createElement("option");
+        option.value = "stoic";
+        option.textContent = "🗿 Stoic Narration";
+        presetSelect.appendChild(option);
+    }
+
+    // Stoic Narration settings
+    const stoicPreset = {
+        voice: "en-US-GuyNeural",
+        emotion: "calm",
+        style: "narration",
+        speed: 88,
+        pitch: -3,
+        volume: 96
+    };
+
+    // Find existing controls
+    const emotionSelect = document.getElementById("emotionSelect");
+    const styleSelect = document.getElementById("styleSelect");
+    const speedSlider = document.getElementById("speedSlider");
+    const pitchSlider = document.getElementById("pitchSlider");
+    const volumeSlider = document.getElementById("volumeSlider");
+
+    presetSelect.addEventListener("change", function () {
+
+        if (presetSelect.value !== "stoic") {
+            return;
+        }
+
+        // Select Guy voice
+        voiceSelect.value = stoicPreset.voice;
+
+        // Update emotion
+        if (emotionSelect) {
+            emotionSelect.value = stoicPreset.emotion;
+        }
+
+        // Update style
+        if (styleSelect) {
+            styleSelect.value = stoicPreset.style;
+        }
+
+        // Update sliders
+        if (speedSlider) {
+            speedSlider.value = stoicPreset.speed;
+        }
+
+        if (pitchSlider) {
+            pitchSlider.value = stoicPreset.pitch;
+        }
+
+        if (volumeSlider) {
+            volumeSlider.value = stoicPreset.volume;
+        }
+
+        // Update the selected voice card if your page has this function
+        if (typeof updateSelectedVoiceCard === "function") {
+            updateSelectedVoiceCard();
+        }
+
+        // Update slider labels if your page has this function
+        if (typeof updateSliderLabels === "function") {
+            updateSliderLabels();
+        }
+
+        console.log("🗿 Stoic Narration activated");
+    });
+
+})();
+</script>
+<script>
+(function () {
+    const DAVIS_VOICE = "en-US-AndrewNeural";
+
+    function getApiUrl() {
+        if (typeof API_URL !== "undefined") return API_URL;
+        if (typeof API !== "undefined") return API;
+        return "http://localhost:8000";
+    }
+
+    async function playDavisPreview() {
+        const API_BASE = getApiUrl();
+
+        const audioPlayer =
+            document.getElementById("audioPlayer") ||
+            document.getElementById("ttsAudio");
+
+        const status =
+            document.getElementById("ttsStatus");
+
+        const voiceSelect =
+            document.getElementById("voiceSelect");
+
+        if (!audioPlayer) {
+            console.error("Davis fix: audio player not found.");
+            return;
+        }
+
+        if (status) {
+            status.textContent =
+                "⏳ Creating Davis voice preview...";
+        }
+
+        const text =
+            "Hello, and welcome to My Voice AI. This is a preview of the Davis voice.";
+
+        try {
+            const response = await fetch(
+                `${API_BASE}/generate`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: DAVIS_VOICE,
+                        style: "normal",
+                        emotion: "neutral",
+                        speed: "0",
+                        pitch: "0",
+                        volume: "0"
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(
+                    `Server error ${response.status}: ${errorText}`
+                );
+            }
+
+            const data = await response.json();
+
+            if (!data.filename) {
+                throw new Error(
+                    "Backend did not return an audio filename."
+                );
+            }
+
+            const audioUrl =
+                `${API_BASE}/audio/${encodeURIComponent(data.filename)}`;
+
+            audioPlayer.src = audioUrl;
+            audioPlayer.style.display = "block";
+            audioPlayer.load();
+
+            if (status) {
+                status.textContent =
+                    "▶️ Davis preview ready.";
+            }
+
+            await audioPlayer.play();
+
+            console.log(
+                "Davis preview played:",
+                audioUrl
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Davis preview error:",
+                error
+            );
+
+            if (status) {
+                status.textContent =
+                    "❌ Davis preview failed: " +
+                    error.message;
+            }
+        }
+    }
+
+    // Intercept Davis voice preview buttons
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            const button =
+                event.target.closest("button");
+
+            if (!button) return;
+
+            const buttonText =
+                button.textContent
+                    .trim()
+                    .toLowerCase();
+
+            const card =
+                button.closest(
+                    ".voice-card, .voice-item, .voice-library-card, [data-voice]"
+                );
+
+            let voice = "";
+
+            if (card) {
+                voice =
+                    card.dataset.voice ||
+                    card.getAttribute("data-voice") ||
+                    "";
+            }
+
+            const isDavis =
+                voice === DAVIS_VOICE ||
+                card?.textContent
+                    ?.toLowerCase()
+                    .includes("davis");
+
+            const isPreviewButton =
+                buttonText.includes("preview");
+
+            if (
+                isDavis &&
+                isPreviewButton
+            ) {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                playDavisPreview();
+            }
+        },
+        true
+    );
+
+    // Also make sure the main voice selector uses Davis correctly
+    const voiceSelect =
+        document.getElementById("voiceSelect");
+
+    if (voiceSelect) {
+
+        voiceSelect.addEventListener(
+            "change",
+            function () {
+
+                if (
+                    voiceSelect.value === DAVIS_VOICE
+                ) {
+                    console.log(
+                        "Davis voice selected correctly."
+                    );
+                }
+
+            }
+        );
+    }
+
+    console.log(
+        "✅ Davis voice fix loaded."
+    );
+
+})();
+</script>
+
+<!-- MY VOICE AI ? VOICE IDENTITY -->
+<section id="myVoiceIdentityPanel" style="
+    margin:24px 0;
+    padding:22px;
+    border-radius:18px;
+    border:1px solid rgba(0,220,255,.25);
+    background:rgba(10,18,30,.8);
+    color:white;
+">
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:15px;
+        margin-bottom:20px;
+    ">
+        <div>
+            <h2 style="margin:0 0 6px;">??? Voice Identity</h2>
+            <p style="margin:0;opacity:.7;">
+                Shape the identity and character of the selected voice.
+            </p>
+        </div>
+
+        <span style="
+            padding:7px 11px;
+            border-radius:999px;
+            font-size:11px;
+            letter-spacing:1px;
+            border:1px solid rgba(0,220,255,.35);
+            color:#00dcff;
+        ">VOICE PROFILE</span>
+    </div>
+
+    <div style="
+        display:grid;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:16px;
+    ">
+
+        <label>
+            Voice Gender
+            <select id="identityGender" style="width:100%;margin-top:8px;">
+                <option value="auto">Automatic</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+            </select>
+        </label>
+
+        <label>
+            Voice Age
+            <select id="identityAge" style="width:100%;margin-top:8px;">
+                <option value="auto">Automatic</option>
+                <option value="young">Young</option>
+                <option value="adult">Adult</option>
+                <option value="mature">Mature</option>
+                <option value="elderly">Elderly</option>
+            </select>
+        </label>
+
+        <label>
+            Accent
+            <select id="identityAccent" style="width:100%;margin-top:8px;">
+                <option value="auto">Automatic</option>
+                <option value="american">American English</option>
+                <option value="british">British English</option>
+                <option value="neutral">Neutral English</option>
+            </select>
+        </label>
+
+        <label>
+            Timbre
+            <input id="identityTimbre" type="range"
+                   min="-50" max="50" value="0"
+                   style="width:100%;margin-top:8px;">
+            <span id="identityTimbreValue">0</span>
+        </label>
+
+        <label>
+            Voice Depth
+            <input id="identityDepth" type="range"
+                   min="-50" max="50" value="0"
+                   style="width:100%;margin-top:8px;">
+            <span id="identityDepthValue">0</span>
+        </label>
+
+        <label>
+            Voice Texture
+            <input id="identityTexture" type="range"
+                   min="-50" max="50" value="0"
+                   style="width:100%;margin-top:8px;">
+            <span id="identityTextureValue">0</span>
+        </label>
+
+    </div>
+
+    <div id="voiceIdentityStatus" style="
+        margin-top:18px;
+        padding:10px 12px;
+        border-radius:10px;
+        background:rgba(0,220,255,.07);
+        font-size:13px;
+        opacity:.85;
+    ">
+        Voice identity profile ready.
+    </div>
+</section>
+
+<script>
+(function () {
+
+    const sliders = [
+        ["identityTimbre", "identityTimbreValue"],
+        ["identityDepth", "identityDepthValue"],
+        ["identityTexture", "identityTextureValue"]
+    ];
+
+    function updateIdentityStatus() {
+
+        const gender =
+            document.getElementById("identityGender")?.value || "auto";
+
+        const age =
+            document.getElementById("identityAge")?.value || "auto";
+
+        const accent =
+            document.getElementById("identityAccent")?.value || "auto";
+
+        const status =
+            document.getElementById("voiceIdentityStatus");
+
+        if (status) {
+            status.textContent =
+                `Voice profile: ${gender} ? ${age} ? ${accent}`;
+        }
+    }
+
+    sliders.forEach(function (item) {
+
+        const slider =
+            document.getElementById(item[0]);
+
+        const output =
+            document.getElementById(item[1]);
+
+        if (!slider || !output) return;
+
+        slider.addEventListener("input", function () {
+
+            output.textContent =
+                slider.value;
+
+            updateIdentityStatus();
+        });
+    });
+
+    ["identityGender", "identityAge", "identityAccent"]
+        .forEach(function (id) {
+
+            const control =
+                document.getElementById(id);
+
+            if (control) {
+                control.addEventListener(
+                    "change",
+                    updateIdentityStatus
+                );
+            }
+        });
+
+    updateIdentityStatus();
+
+    console.log(
+        "My Voice AI ? Voice Identity loaded."
+    );
+
+})();
+</script>
+
+
+<script>
+(function () {
+    /*
+       ============================================================
+       MY VOICE AI - VOICE IDENTITY ENGINE
+       Gender + Accent -> automatic compatible Edge voice
+       ============================================================
+    */
+
+    const IDENTITY_VOICES = {
+        female: {
+            american: "en-US-AriaNeural",
+            british: "en-GB-SoniaNeural",
+            neutral: "en-US-JennyNeural"
+        },
+
+        male: {
+            american: "en-US-GuyNeural",
+            british: "en-GB-RyanNeural",
+            neutral: "en-US-AndrewNeural"
+        }
+    };
+
+    function findIdentitySelect(labelWords) {
+
+        const selects =
+            Array.from(document.querySelectorAll("select"));
+
+        for (const select of selects) {
+
+            const parentText =
+                select.parentElement
+                    ? select.parentElement.innerText.toLowerCase()
+                    : "";
+
+            const grandText =
+                select.parentElement &&
+                select.parentElement.parentElement
+                    ? select.parentElement.parentElement.innerText.toLowerCase()
+                    : "";
+
+            const text =
+                parentText + " " + grandText;
+
+            if (
+                labelWords.some(word =>
+                    text.includes(word)
+                )
+            ) {
+                return select;
+            }
+        }
+
+        return null;
+    }
+
+    function getIdentitySettings() {
+
+        const genderSelect =
+            findIdentitySelect([
+                "voice gender",
+                "gender"
+            ]);
+
+        const accentSelect =
+            findIdentitySelect([
+                "accent"
+            ]);
+
+        const gender =
+            genderSelect
+                ? genderSelect.value.toLowerCase()
+                : "automatic";
+
+        const accent =
+            accentSelect
+                ? accentSelect.value.toLowerCase()
+                : "automatic";
+
+        return {
+            gender,
+            accent
+        };
+    }
+
+    function chooseIdentityVoice(originalVoice) {
+
+        const settings =
+            getIdentitySettings();
+
+        let gender =
+            settings.gender;
+
+        let accent =
+            settings.accent;
+
+        /*
+           Automatic gender:
+           preserve the currently selected voice.
+        */
+        if (
+            !gender ||
+            gender === "automatic"
+        ) {
+            return originalVoice;
+        }
+
+        let voiceGroup;
+
+        if (gender.includes("female")) {
+            voiceGroup = IDENTITY_VOICES.female;
+        }
+        else if (gender.includes("male")) {
+            voiceGroup = IDENTITY_VOICES.male;
+        }
+        else {
+            return originalVoice;
+        }
+
+        if (accent.includes("british") || accent.includes("uk")) {
+            return voiceGroup.british;
+        }
+
+        if (
+            accent.includes("american") ||
+            accent.includes("us")
+        ) {
+            return voiceGroup.american;
+        }
+
+        if (
+            accent.includes("neutral") ||
+            accent === "automatic"
+        ) {
+            return voiceGroup.neutral;
+        }
+
+        return originalVoice;
+    }
+
+    /*
+       Intercept Generate Speech requests.
+
+       We do NOT replace the existing Generate Speech function.
+       Instead, we modify the request just before it reaches
+       the FastAPI backend.
+    */
+
+    const originalFetch = window.fetch;
+
+    window.fetch = async function (input, init) {
+
+        try {
+
+            const url =
+                typeof input === "string"
+                    ? input
+                    : input && input.url
+                        ? input.url
+                        : "";
+
+            if (
+                url.includes("/generate") &&
+                init &&
+                init.body
+            ) {
+
+                let body;
+
+                try {
+                    body = JSON.parse(init.body);
+                }
+                catch (_) {
+                    body = null;
+                }
+
+                if (body) {
+
+                    const oldVoice =
+                        body.voice ||
+                        "en-US-AriaNeural";
+
+                    const newVoice =
+                        chooseIdentityVoice(oldVoice);
+
+                    body.voice = newVoice;
+
+                    init.body =
+                        JSON.stringify(body);
+
+                    console.log(
+                        "Voice Identity:",
+                        getIdentitySettings(),
+                        "Voice:",
+                        oldVoice,
+                        "->",
+                        newVoice
+                    );
+                }
+            }
+
+        }
+        catch (error) {
+
+            console.warn(
+                "Voice Identity Engine warning:",
+                error
+            );
+        }
+
+        return originalFetch.apply(
+            this,
+            arguments
+        );
+    };
+
+    /*
+       Update the small status text in the Voice Identity panel.
+    */
+
+    function updateIdentityStatus() {
+
+        const settings =
+            getIdentitySettings();
+
+        const panel =
+            Array.from(
+                document.querySelectorAll("*")
+            ).find(element =>
+                element.childElementCount === 0 &&
+                element.textContent &&
+                element.textContent.includes("Voice profile:")
+            );
+
+        if (!panel) return;
+
+        const gender =
+            settings.gender === "automatic"
+                ? "auto"
+                : settings.gender;
+
+        const accent =
+            settings.accent === "automatic"
+                ? "auto"
+                : settings.accent;
+
+        panel.textContent =
+            `Voice profile: ${gender} ? ${accent}`;
+    }
+
+    const identitySelects =
+        Array.from(
+            document.querySelectorAll("select")
+        );
+
+    identitySelects.forEach(select => {
+
+        select.addEventListener(
+            "change",
+            updateIdentityStatus
+        );
+
+    });
+
+    updateIdentityStatus();
+
+    console.log(
+        "? My Voice AI Voice Identity Engine loaded."
+    );
+
+})();
+</script>
+
+
+<style>
+#myVoiceIdentityPanel.voice-identity-collapsed > *:not(#voiceIdentityToggle) {
+    display: none !important;
+}
+
+#myVoiceIdentityPanel #voiceIdentityToggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    margin: 0;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(0, 220, 255, 0.08);
+    color: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+}
+
+#myVoiceIdentityPanel #voiceIdentityToggle:hover {
+    background: rgba(0, 220, 255, 0.14);
+}
+
+#myVoiceIdentityPanel.voice-identity-collapsed {
+    padding-bottom: 10px;
+}
+</style>
+
+<script>
+(function () {
+    function setupVoiceIdentityCollapse() {
+        const panel = document.getElementById("myVoiceIdentityPanel");
+
+        if (!panel || panel.dataset.collapseReady === "true") {
+            return;
+        }
+
+        panel.dataset.collapseReady = "true";
+
+        const toggle = document.createElement("button");
+        toggle.id = "voiceIdentityToggle";
+        toggle.type = "button";
+        toggle.innerHTML = `
+            <span>??? Voice Identity</span>
+            <span id="voiceIdentityArrow">?</span>
+        `;
+
+        panel.insertBefore(toggle, panel.firstChild);
+
+        panel.classList.add("voice-identity-collapsed");
+
+        toggle.addEventListener("click", function () {
+            const collapsed =
+                panel.classList.toggle("voice-identity-collapsed");
+
+            const arrow =
+                document.getElementById("voiceIdentityArrow");
+
+            if (arrow) {
+                arrow.textContent = collapsed ? "?" : "?";
+            }
+        });
+
+        console.log("? Voice Identity collapsible UI installed.");
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            setupVoiceIdentityCollapse
+        );
+    } else {
+        setupVoiceIdentityCollapse();
+    }
+})();
+</script>
+
+
+<!-- SAFE HISTORY DRAWER INSTALLED -->﻿<style id="safeHistoryDrawerStyle">
+#safeHistoryBtn{position:fixed;left:12px;top:50%;transform:translateY(-50%);z-index:9998;background:#111827;color:white;border:1px solid #374151;border-radius:0 10px 10px 0;padding:12px 9px;cursor:pointer;font-weight:700}
+#safeHistoryBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9997;display:none}
+#safeHistoryBackdrop.open{display:block}
+#safeHistoryDrawer{position:fixed;left:0;top:0;bottom:0;width:min(380px,88vw);background:#0b1020;color:white;z-index:9999;transform:translateX(-105%);transition:.25s;overflow-y:auto;padding:20px;box-sizing:border-box;box-shadow:8px 0 30px rgba(0,0,0,.4)}
+#safeHistoryDrawer.open{transform:translateX(0)}
+#safeHistoryDrawer h2{margin-top:0}
+#safeHistoryClose{float:right;background:#1f2937;color:white;border:1px solid #374151;border-radius:7px;padding:6px 10px;cursor:pointer}
+.safeHistoryItem{background:#111827;border:1px solid #263149;border-radius:10px;padding:12px;margin:10px 0}
+.safeHistoryText{font-size:14px;margin-bottom:10px;white-space:pre-wrap}
+.safeHistoryActions{display:flex;gap:6px;flex-wrap:wrap}
+.safeHistoryActions button{background:#1f2937;color:white;border:1px solid #374151;border-radius:6px;padding:6px 9px;cursor:pointer}
+</style>
+<button id="safeHistoryBtn" type="button">☰ History</button>
+<div id="safeHistoryBackdrop"></div>
+<aside id="safeHistoryDrawer">
+<button id="safeHistoryClose" type="button">✕</button>
+<h2>🎙️ Voice History</h2>
+<div id="safeHistoryList"></div>
+</aside>
+<script id="safeHistoryDrawerScript">
+(function(){
+const KEY="myVoiceAI_history_v1";
+const btn=document.getElementById("safeHistoryBtn");
+const drawer=document.getElementById("safeHistoryDrawer");
+const backdrop=document.getElementById("safeHistoryBackdrop");
+const close=document.getElementById("safeHistoryClose");
+const list=document.getElementById("safeHistoryList");
+if(!btn||!drawer||!backdrop||!close||!list)return;
+function history(){try{return JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){return[]}}
+function render(){
+const h=history();
+if(!h.length){list.innerHTML="<p>No voice generations yet.</p>";return}
+list.innerHTML="";
+h.forEach((x,i)=>{
+const item=document.createElement("div");
+item.className="safeHistoryItem";
+item.innerHTML="<div class='safeHistoryText'></div><div class='safeHistoryActions'></div>";
+item.querySelector(".safeHistoryText").textContent=x.text||("Generation "+(i+1));
+const a=item.querySelector(".safeHistoryActions");
+if(x.filename){
+const play=document.createElement("button");play.textContent="▶ Play";play.onclick=()=>{const p=document.getElementById("audioPlayer");if(p){p.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);p.load();p.play().catch(()=>{})}};a.appendChild(play);
+const dl=document.createElement("button");dl.textContent="⬇ Download";dl.onclick=()=>{const q=document.createElement("a");q.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);q.download=x.filename;q.click()};a.appendChild(dl);
+}
+const del=document.createElement("button");del.textContent="🗑 Delete";del.onclick=()=>{const h2=history();h2.splice(i,1);localStorage.setItem(KEY,JSON.stringify(h2));render()};a.appendChild(del);
+list.appendChild(item);
+});
+}
+function open(){render();drawer.classList.add("open");backdrop.classList.add("open")}
+function shut(){drawer.classList.remove("open");backdrop.classList.remove("open")}
+btn.onclick=open;close.onclick=shut;backdrop.onclick=shut;
+console.log("Safe History Drawer installed");
+})();
+</script>
+<!-- SAFE HISTORY DRAWER UPGRADE -->﻿<script id="safeHistoryDrawerUpgrade">
+(function(){
+  const KEY="myVoiceAI_history_v1";
+  const list=document.getElementById("safeHistoryList");
+  if(!list) return;
+
+  function getHistory(){
+    try{
+      return JSON.parse(localStorage.getItem(KEY)||"[]");
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveHistory(h){
+    localStorage.setItem(KEY,JSON.stringify(h));
+  }
+
+  function formatDate(value){
+    if(!value) return "Unknown time";
+    const d=new Date(value);
+    if(isNaN(d.getTime())) return "Unknown time";
+    return d.toLocaleString();
+  }
+
+  function loadSettings(x){
+    const ids={
+      voice:"voiceSelect",
+      emotion:"emotionSelect",
+      style:"styleSelect",
+      speed:"speedSlider",
+      pitch:"pitchSlider",
+      volume:"volumeSlider"
+    };
+
+    Object.keys(ids).forEach(function(key){
+      const el=document.getElementById(ids[key]);
+      if(el && x[key] !== undefined && x[key] !== null){
+        el.value=String(x[key]);
+        el.dispatchEvent(new Event("change",{bubbles:true}));
+        el.dispatchEvent(new Event("input",{bubbles:true}));
+      }
+    });
+
+    if(typeof updateSelectedVoiceCard==="function"){
+      try{updateSelectedVoiceCard();}catch(e){}
+    }
+
+    if(typeof updateSliderLabels==="function"){
+      try{updateSliderLabels();}catch(e){}
+    }
+
+    alert("Voice settings loaded.");
+  }
+
+  function render(){
+    const h=getHistory();
+
+    list.innerHTML="";
+
+    if(!h.length){
+      list.innerHTML="<p>No voice generations yet.</p>";
+      return;
+    }
+
+    h.forEach(function(x,i){
+      const item=document.createElement("div");
+      item.className="safeHistoryItem";
+
+      const text=document.createElement("div");
+      text.className="safeHistoryText";
+      text.textContent=x.text || ("Generation "+(i+1));
+
+      const time=document.createElement("div");
+      time.style.fontSize="12px";
+      time.style.opacity=".65";
+      time.style.marginBottom="10px";
+      time.textContent=formatDate(x.createdAt || x.timestamp || x.date);
+
+      const actions=document.createElement("div");
+      actions.className="safeHistoryActions";
+
+      if(x.filename){
+        const play=document.createElement("button");
+        play.textContent="▶ Play";
+        play.onclick=function(){
+          const audio=document.getElementById("audioPlayer");
+
+          if(audio){
+            audio.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);
+            audio.load();
+            audio.play().catch(function(){});
+          }
+        };
+        actions.appendChild(play);
+
+        const download=document.createElement("button");
+        download.textContent="⬇ Download";
+        download.onclick=function(){
+          const a=document.createElement("a");
+          a.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);
+          a.download=x.filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        };
+        actions.appendChild(download);
+      }
+
+      const load=document.createElement("button");
+      load.textContent="⚙ Load Settings";
+      load.onclick=function(){
+        loadSettings(x);
+      };
+      actions.appendChild(load);
+
+      const del=document.createElement("button");
+      del.textContent="🗑 Delete";
+      del.onclick=function(){
+        const h2=getHistory();
+        h2.splice(i,1);
+        saveHistory(h2);
+        render();
+      };
+      actions.appendChild(del);
+
+      item.appendChild(text);
+      item.appendChild(time);
+      item.appendChild(actions);
+      list.appendChild(item);
+    });
+
+    const clear=document.createElement("button");
+    clear.textContent="🧹 Clear History";
+    clear.style.width="100%";
+    clear.style.marginTop="15px";
+    clear.style.padding="10px";
+    clear.style.background="#7f1d1d";
+    clear.style.color="white";
+    clear.style.border="1px solid #991b1b";
+    clear.style.borderRadius="8px";
+    clear.style.cursor="pointer";
+    clear.onclick=function(){
+      if(confirm("Clear all voice history?")){
+        localStorage.removeItem(KEY);
+        render();
+      }
+    };
+
+    list.appendChild(clear);
+  }
+
+  window.safeHistoryDrawerRender=render;
+
+  const oldOpen=document.getElementById("safeHistoryBtn");
+  if(oldOpen){
+    oldOpen.addEventListener("click",function(){
+      setTimeout(render,50);
+    });
+  }
+
+  render();
+
+  console.log("✅ History Drawer upgraded");
+})();
+</script>
+<!-- OLD HISTORY PANEL HIDDEN -->﻿<script id="hideOldHistoryPanel">
+(function(){
+  function hideOldHistory(){
+    const drawer=document.getElementById("safeHistoryDrawer");
+
+    document.querySelectorAll("*").forEach(function(el){
+      if(el===drawer || (drawer && drawer.contains(el))) return;
+
+      const text=(el.textContent||"").trim();
+
+      if(text==="Voice History" || text==="🕘 Voice History"){
+        let target=el;
+
+        for(let i=0;i<5;i++){
+          if(!target.parentElement) break;
+          const p=target.parentElement;
+          const pText=(p.textContent||"").trim();
+
+          if(
+            pText.length<1200 &&
+            (
+              pText.includes("Clear History") ||
+              pText.includes("Load Settings") ||
+              pText.includes("Voice History")
+            )
+          ){
+            target=p;
+          }else{
+            break;
+          }
+        }
+
+        if(target && target!==drawer){
+          target.style.display="none";
+          target.setAttribute("data-old-history-hidden","true");
+        }
+      }
+    });
+
+    console.log("✅ Old History panel hidden. New History drawer preserved.");
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",hideOldHistory);
+  }else{
+    hideOldHistory();
+  }
+})();
+</script>
+</body>
+</html>
+
+<style id="myVoiceNameLibraryStyle">
+#myVoiceNameLibrary {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.10);
+}
+
+#myVoiceNameLibrary h3 {
+    margin: 0 0 6px;
+}
+
+#myVoiceNameLibrary .name-help {
+    opacity: 0.72;
+    font-size: 13px;
+    margin-bottom: 14px;
+}
+
+#myVoiceNameLibrary input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 9px;
+    padding: 11px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.20);
+    color: inherit;
+}
+
+#myVoiceNameLibrary button {
+    padding: 9px 13px;
+    border: 0;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+#myNameRulesList {
+    margin-top: 14px;
+}
+
+.my-name-rule {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.my-name-rule-text {
+    font-size: 13px;
+}
+
+.my-name-rule-text strong {
+    font-weight: 700;
+}
+
+.my-name-delete {
+    background: rgba(255,70,70,0.15);
+    color: inherit;
+}
+</style>
+
+<div id="myVoiceNameLibrary">
+    <h3>??? Name Pronunciation Library</h3>
+
+    <div class="name-help">
+        Add a name and exactly how you want the AI voice to pronounce it.
+    </div>
+
+    <input
+        id="myNameInput"
+        type="text"
+        placeholder="Name � e.g. Nhyira"
+    >
+
+    <input
+        id="myPronunciationInput"
+        type="text"
+        placeholder="Pronounce as � e.g. Nn-she-ra"
+    >
+
+    <button id="myAddNameBtn" type="button">
+        + Add Name
+    </button>
+
+    <div id="myNameRulesList"></div>
+</div>
+
+<script id="myVoiceNameLibraryScript">
+(function () {
+
+    const STORAGE_KEY = "myVoiceAI_namePronunciations_v1";
+
+    const nameInput = document.getElementById("myNameInput");
+    const pronunciationInput = document.getElementById("myPronunciationInput");
+    const addButton = document.getElementById("myAddNameBtn");
+    const list = document.getElementById("myNameRulesList");
+
+    if (!nameInput || !pronunciationInput || !addButton || !list) {
+        console.warn("Name Pronunciation Library: elements not found.");
+        return;
+    }
+
+    let rules = {};
+
+    try {
+        rules = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch {
+        rules = {};
+    }
+
+    // Correct pronunciation supplied by the user.
+    if (!rules["Nhyira"]) {
+        rules["Nhyira"] = "Nn-she-ra";
+    }
+
+    function saveRules() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rules));
+    }
+
+    function renderRules() {
+
+        list.innerHTML = "";
+
+        const entries = Object.entries(rules);
+
+        if (!entries.length) {
+            list.innerHTML =
+                '<div style="opacity:.6;font-size:13px;">No custom names saved yet.</div>';
+            return;
+        }
+
+        entries.forEach(function ([name, pronunciation]) {
+
+            const row = document.createElement("div");
+            row.className = "my-name-rule";
+
+            const text = document.createElement("div");
+            text.className = "my-name-rule-text";
+
+            text.innerHTML =
+                "<strong>" +
+                escapeHtml(name) +
+                "</strong> ? " +
+                escapeHtml(pronunciation);
+
+            const remove = document.createElement("button");
+            remove.className = "my-name-delete";
+            remove.type = "button";
+            remove.textContent = "Delete";
+
+            remove.addEventListener("click", function () {
+                delete rules[name];
+                saveRules();
+                renderRules();
+            });
+
+            row.appendChild(text);
+            row.appendChild(remove);
+
+            list.appendChild(row);
+        });
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    addButton.addEventListener("click", function () {
+
+        const name = nameInput.value.trim();
+        const pronunciation = pronunciationInput.value.trim();
+
+        if (!name || !pronunciation) {
+            alert("Enter both the name and its pronunciation.");
+            return;
+        }
+
+        rules[name] = pronunciation;
+
+        saveRules();
+        renderRules();
+
+        nameInput.value = "";
+        pronunciationInput.value = "";
+
+        console.log(
+            "Name pronunciation saved:",
+            name,
+            "?",
+            pronunciation
+        );
+    });
+
+    renderRules();
+
+    // Make the saved rules available to the existing Generate request.
+    const originalFetch = window.fetch;
+
+    window.fetch = async function (input, init) {
+
+        try {
+
+            const url =
+                typeof input === "string"
+                    ? input
+                    : input && input.url
+                    ? input.url
+                    : "";
+
+            if (
+                url.includes("/generate") &&
+                init &&
+                init.body
+            ) {
+
+                const body = JSON.parse(init.body);
+
+                body.name_pronunciations = rules;
+
+                init = {
+                    ...init,
+                    body: JSON.stringify(body)
+                };
+            }
+
+        } catch (error) {
+            console.warn(
+                "Name Pronunciation Library request update failed:",
+                error
+            );
+        }
+
+        return originalFetch(input, init);
+    };
+
+})();
+</script>
