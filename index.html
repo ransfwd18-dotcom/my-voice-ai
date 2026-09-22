@@ -1,4 +1,4 @@
-```html
+﻿```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -987,7 +987,7 @@
 
 <script>
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://my-voice-ai-ytt0.onrender.com";
 
 const HISTORY_KEY =
     "myVoiceAI_history_v1";
@@ -2897,7 +2897,7 @@ console.log(
     function getApiUrl() {
         if (typeof API_URL !== "undefined") return API_URL;
         if (typeof API !== "undefined") return API;
-        return "http://localhost:8000";
+        return "https://my-voice-ai-ytt0.onrender.com";
     }
 
     async function playDavisPreview() {
@@ -3651,8 +3651,8 @@ item.innerHTML="<div class='safeHistoryText'></div><div class='safeHistoryAction
 item.querySelector(".safeHistoryText").textContent=x.text||("Generation "+(i+1));
 const a=item.querySelector(".safeHistoryActions");
 if(x.filename){
-const play=document.createElement("button");play.textContent="▶ Play";play.onclick=()=>{const p=document.getElementById("audioPlayer");if(p){p.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);p.load();p.play().catch(()=>{})}};a.appendChild(play);
-const dl=document.createElement("button");dl.textContent="⬇ Download";dl.onclick=()=>{const q=document.createElement("a");q.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);q.download=x.filename;q.click()};a.appendChild(dl);
+const play=document.createElement("button");play.textContent="▶ Play";play.onclick=()=>{const p=document.getElementById("audioPlayer");if(p){p.src="https://my-voice-ai-ytt0.onrender.com/audio/"+encodeURIComponent(x.filename);p.load();p.play().catch(()=>{})}};a.appendChild(play);
+const dl=document.createElement("button");dl.textContent="⬇ Download";dl.onclick=()=>{const q=document.createElement("a");q.href="https://my-voice-ai-ytt0.onrender.com/audio/"+encodeURIComponent(x.filename);q.download=x.filename;q.click()};a.appendChild(dl);
 }
 const del=document.createElement("button");del.textContent="🗑 Delete";del.onclick=()=>{const h2=history();h2.splice(i,1);localStorage.setItem(KEY,JSON.stringify(h2));render()};a.appendChild(del);
 list.appendChild(item);
@@ -3753,7 +3753,7 @@ console.log("Safe History Drawer installed");
           const audio=document.getElementById("audioPlayer");
 
           if(audio){
-            audio.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);
+            audio.src="https://my-voice-ai-ytt0.onrender.com/audio/"+encodeURIComponent(x.filename);
             audio.load();
             audio.play().catch(function(){});
           }
@@ -3764,7 +3764,7 @@ console.log("Safe History Drawer installed");
         download.textContent="⬇ Download";
         download.onclick=function(){
           const a=document.createElement("a");
-          a.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);
+          a.href="https://my-voice-ai-ytt0.onrender.com/audio/"+encodeURIComponent(x.filename);
           a.download=x.filename;
           document.body.appendChild(a);
           a.click();
@@ -3956,13 +3956,13 @@ console.log("Safe History Drawer installed");
     <input
         id="myNameInput"
         type="text"
-        placeholder="Name � e.g. Nhyira"
+        placeholder="Name  e.g. Nhyira"
     >
 
     <input
         id="myPronunciationInput"
         type="text"
-        placeholder="Pronounce as � e.g. Nn-she-ra"
+        placeholder="Pronounce as  e.g. Nn-she-ra"
     >
 
     <button id="myAddNameBtn" type="button">
@@ -4127,3 +4127,4 @@ console.log("Safe History Drawer installed");
 
 })();
 </script>
+
