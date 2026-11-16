@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException
+﻿from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -7,6 +7,7 @@ import os
 import uuid
 import re
 from master_director import MasterNarrationDirector
+from accounts import router as accounts_router, require_user, consume_generation
 
 app = FastAPI(title="My Voice AI")
 
@@ -1530,7 +1531,7 @@ def natural_speech_timing_adjustments(text: str, index: int):
 # ===== END NATURAL SPEECH TIMING ENGINE =====
 
 @app.post("/generate")
-async def generate(request: GenerateRequest):
+async def generate(request: GenerateRequest, user: dict = Depends(require_user)):
 
     if not request.text.strip():
         raise HTTPException(
@@ -1538,6 +1539,8 @@ async def generate(request: GenerateRequest):
             detail="Text cannot be empty."
         )
 
+    
+    usage = consume_generation(user["id"])
     filename = f"{uuid.uuid4()}.mp3"
 
     output_path = os.path.join(
@@ -2161,5 +2164,16 @@ async def get_audio(filename: str):
 
 
 
+from master_director import MasterNarrationDirector
+
+from starlette.middleware.sessions import SessionMiddleware
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_SECRET", "local-development-secret-change-this"),
+    same_site="lax",
+    https_only=os.getenv("COOKIE_SECURE", "false").lower() == "true"
+)
+
+app.include_router(accounts_router)
 
 
