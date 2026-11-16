@@ -13,7 +13,7 @@ app = FastAPI(title="My Voice AI")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -27,9 +27,9 @@ class GenerateRequest(BaseModel):
     voice: str = "en-US-AriaNeural"
     style: str = "normal"
     emotion: str = "neutral"
-    speed: str = "0"
-    pitch: str = "0"
-    volume: str = "0"
+    speed: float = 0
+    pitch: float = 0
+    volume: float = 0
 
 
 def apply_name_pronunciations(text: str, rules: dict) -> str:
@@ -508,7 +508,7 @@ def auto_voice_intelligence(text: str, base_speed: str, base_pitch: str, base_vo
     pitch = max(-50, min(50, pitch))
     volume = max(-50, min(50, volume))
 
-    return clean.strip(), str(speed), str(pitch), str(volume)
+    return clean.strip(), speed, pitch, volume
 
 # ===== END AUTO VOICE INTELLIGENCE =====
 
@@ -748,7 +748,6 @@ def mood_adjustments(mood: str, intensity: int):
 
 
 # ===== ENERGY ENGINE =====
-
 def detect_energy(text: str):
     clean = text.strip()
     lower = clean.lower()
@@ -1585,34 +1584,56 @@ async def generate(request: GenerateRequest):
 
     # ===== MOOD DETECTION =====
     detected_mood, mood_intensity = detect_mood(speech_text)
-    mood_speed, mood_pitch, mood_volume = mood_adjustments(detected_mood, mood_intensity)
+    mood_speed, mood_pitch, mood_volume = mood_adjustments(
+        detected_mood,
+        mood_intensity
+    )
 
-    auto_speed = float(auto_speed) + mood_speed
-    auto_pitch = float(auto_pitch) + mood_pitch
-    auto_volume = float(auto_volume) + mood_volume
-
-    auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
-        auto_speed,
-        auto_pitch,
-        auto_volume
+    director.add_recommendation(
+        "Mood",
+        speed=mood_speed,
+        pitch=mood_pitch,
+        volume=mood_volume,
+        confidence=float(mood_intensity),
+        reason=f"Mood: {detected_mood}"
     )
 
     print(
         f"Mood: {detected_mood} "
         f"(intensity {mood_intensity}%) | "
-        f"speed={auto_speed}, pitch={auto_pitch}, volume={auto_volume}"
+        f"recommendation_speed={mood_speed}, "
+        f"recommendation_pitch={mood_pitch}, "
+        f"recommendation_volume={mood_volume}"
     )
+
+    # ===== END MOOD ENGINE =====
 
     # ===== EMOTION VARIATION =====
     
     # ===== ENERGY ENGINE =====
     detected_energy, energy_intensity = detect_energy(speech_text)
-    energy_speed, energy_pitch, energy_volume = energy_adjustments(detected_energy, energy_intensity)
-    auto_speed = float(auto_speed) + energy_speed
-    auto_pitch = float(auto_pitch) + energy_pitch
-    auto_volume = float(auto_volume) + energy_volume
-    auto_speed, auto_pitch, auto_volume = clamp_emotion_values(auto_speed, auto_pitch, auto_volume)
-    print(f"Energy: {detected_energy} (intensity {energy_intensity}%) | speed={auto_speed}, pitch={auto_pitch}, volume={auto_volume}")
+    energy_speed, energy_pitch, energy_volume = energy_adjustments(
+        detected_energy,
+        energy_intensity
+    )
+
+    director.add_recommendation(
+        "Energy",
+        speed=energy_speed,
+        pitch=energy_pitch,
+        volume=energy_volume,
+        confidence=float(energy_intensity),
+        reason=f"Energy: {detected_energy}"
+    )
+
+    print(
+        f"Energy: {detected_energy} "
+        f"(intensity {energy_intensity}%) | "
+        f"recommendation_speed={energy_speed}, "
+        f"recommendation_pitch={energy_pitch}, "
+        f"recommendation_volume={energy_volume}"
+    )
+
     # ===== END ENERGY ENGINE =====
     # ===== CONFIDENCE ENGINE =====
     detected_confidence, confidence_intensity = detect_confidence(speech_text)
@@ -1630,9 +1651,6 @@ async def generate(request: GenerateRequest):
         reason=f"Confidence: {detected_confidence}"
     )
 
-    auto_speed = float(auto_speed) + confidence_speed
-    auto_pitch = float(auto_pitch) + confidence_pitch
-    auto_volume = float(auto_volume) + confidence_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -1665,9 +1683,6 @@ async def generate(request: GenerateRequest):
         reason=f"Attitude: {detected_attitude}"
     )
 
-    auto_speed = float(auto_speed) + attitude_speed
-    auto_pitch = float(auto_pitch) + attitude_pitch
-    auto_volume = float(auto_volume) + attitude_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -1701,9 +1716,6 @@ async def generate(request: GenerateRequest):
         reason=f"Excitement: {detected_excitement}"
     )
 
-    auto_speed = float(auto_speed) + excitement_speed
-    auto_pitch = float(auto_pitch) + excitement_pitch
-    auto_volume = float(auto_volume) + excitement_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -1737,9 +1749,6 @@ async def generate(request: GenerateRequest):
         reason=f"Anger/Frustration: {detected_anger}"
     )
 
-    auto_speed = float(auto_speed) + anger_speed
-    auto_pitch = float(auto_pitch) + anger_pitch
-    auto_volume = float(auto_volume) + anger_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -1773,9 +1782,6 @@ async def generate(request: GenerateRequest):
         reason=f"Happiness/Playfulness: {detected_happiness}"
     )
 
-    auto_speed = float(auto_speed) + happiness_speed
-    auto_pitch = float(auto_pitch) + happiness_pitch
-    auto_volume = float(auto_volume) + happiness_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -1811,9 +1817,6 @@ async def generate(request: GenerateRequest):
         reason=f"Sadness/Seriousness: {detected_sadness_mode}"
     )
 
-    auto_speed = float(auto_speed) + sadness_speed
-    auto_pitch = float(auto_pitch) + sadness_pitch
-    auto_volume = float(auto_volume) + sadness_volume
 
     auto_speed, auto_pitch, auto_volume = clamp_emotion_values(
         auto_speed,
@@ -2155,4 +2158,8 @@ async def get_audio(filename: str):
         media_type="audio/mpeg",
         filename=filename
     )
+
+
+
+
 
