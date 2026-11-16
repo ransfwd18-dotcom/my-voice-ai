@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -371,7 +371,7 @@
             }
         }
     </style>
-<!-- ACTUAL HISTORY PANEL HIDDEN -->﻿<style id="hideActualHistoryPanel">
+<!-- ACTUAL HISTORY PANEL HIDDEN -->ï»¿<style id="hideActualHistoryPanel">
 .panel:has(.history-header) {
     display: none !important;
 }
@@ -488,7 +488,7 @@
             const usage = await accountRequest("/auth/usage");
 
             document.getElementById("accountUsage").textContent =
-                `${usage.used} used / ${usage.limit} daily — ${usage.remaining} remaining`;
+                `${usage.used} used / ${usage.limit} daily â€” ${usage.remaining} remaining`;
 
             return true;
         } catch {
@@ -552,7 +552,7 @@
 
 <div class="container">
 
-    <h1>🎙️ My Voice AI</h1>
+    <h1>ðŸŽ™ï¸ My Voice AI</h1>
 
     <div class="subtitle">
         Generate realistic AI speech with your own voice settings.
@@ -587,7 +587,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Female • US English
+                    Female â€¢ US English
                 </div>
 
                 <div class="audio-wave">
@@ -599,11 +599,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -629,7 +629,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Male • US English
+                    Male â€¢ US English
                 </div>
 
                 <div class="audio-wave">
@@ -641,11 +641,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -671,7 +671,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Female • US English
+                    Female â€¢ US English
                 </div>
 
                 <div class="audio-wave">
@@ -683,11 +683,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -713,7 +713,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Male • US English
+                    Male â€¢ US English
                 </div>
 
                 <div class="audio-wave">
@@ -725,11 +725,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -755,7 +755,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Female • UK English
+                    Female â€¢ UK English
                 </div>
 
                 <div class="audio-wave">
@@ -767,11 +767,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -797,7 +797,7 @@
                 </div>
 
                 <div class="voice-info">
-                    Male • UK English
+                    Male â€¢ UK English
                 </div>
 
                 <div class="audio-wave">
@@ -809,11 +809,11 @@
                 </div>
 
                 <div class="selected-label">
-                    ✓ Selected
+                    âœ“ Selected
                 </div>
 
                 <div class="previewing-label">
-                    ● Previewing
+                    â— Previewing
                 </div>
 
                 <div class="voice-actions">
@@ -1065,13 +1065,13 @@
                 class="primary"
                 id="generateBtn"
             >
-                🎙️ Generate Speech
+                ðŸŽ™ï¸ Generate Speech
             </button>
 
             <button
                 id="previewSelectedBtn"
             >
-                ▶ Preview Selected Voice
+                â–¶ Preview Selected Voice
             </button>
 
         </div>
@@ -1105,7 +1105,7 @@
             style="display:none;"
             download="my-voice-ai.mp3"
         >
-            ⬇ Download Audio
+            â¬‡ Download Audio
         </a>
 
     </div>
@@ -1117,7 +1117,7 @@
         <div class="history-header">
 
             <div>
-                <h2>🕘 Voice History</h2>
+                <h2>ðŸ•˜ Voice History</h2>
 
                 <div
                     class="history-count"
@@ -1130,7 +1130,7 @@
             <button
                 id="clearHistoryBtn"
             >
-                🗑 Clear History
+                ðŸ—‘ Clear History
             </button>
 
         </div>
@@ -1156,7 +1156,7 @@
 
 <script>
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = window.location.origin;
 
 const HISTORY_KEY =
     "myVoiceAI_history_v1";
@@ -2037,33 +2037,33 @@ function renderHistory() {
                     </div>
 
                     <div class="history-meta">
-                        🎙️ ${escapeHtml(
+                        ðŸŽ™ï¸ ${escapeHtml(
                             voiceDisplayName(
                                 item.voice
                             )
                         )}
-                        •
+                        â€¢
                         ${escapeHtml(
                             item.emotion
                         )}
-                        •
+                        â€¢
                         ${escapeHtml(
                             item.style
                         )}
-                        •
+                        â€¢
                         Speed ${escapeHtml(
                             item.speed
                         )}%
-                        •
+                        â€¢
                         Pitch ${escapeHtml(
                             item.pitch
                         )}
-                        •
+                        â€¢
                         Volume ${escapeHtml(
                             item.volume
                         )}%
                         <br>
-                        🕒 ${escapeHtml(
+                        ðŸ•’ ${escapeHtml(
                             formatHistoryDate(
                                 item.createdAt
                             )
@@ -2071,7 +2071,7 @@ function renderHistory() {
                     </div>
 
                     <div class="history-now-playing">
-                        ● Playing
+                        â— Playing
                     </div>
 
                 </div>
@@ -2085,21 +2085,21 @@ function renderHistory() {
                     data-history-action="play"
                     data-id="${item.id}"
                 >
-                    ▶ Play
+                    â–¶ Play
                 </button>
 
                 <button
                     data-history-action="load"
                     data-id="${item.id}"
                 >
-                    ↩ Load Settings
+                    â†© Load Settings
                 </button>
 
                 <button
                     data-history-action="download"
                     data-id="${item.id}"
                 >
-                    ⬇ Download
+                    â¬‡ Download
                 </button>
 
                 <button
@@ -2107,7 +2107,7 @@ function renderHistory() {
                     data-history-action="delete"
                     data-id="${item.id}"
                 >
-                    🗑 Delete
+                    ðŸ—‘ Delete
                 </button>
 
             </div>
@@ -2491,6 +2491,7 @@ async function generateSpeech(
                 `${API_URL}/generate`,
                 {
                     method: "POST",
+                    credentials: "include",
 
                     headers: {
                         "Content-Type":
@@ -2993,7 +2994,7 @@ console.log(
     if (!presetSelect.querySelector('option[value="stoic"]')) {
         const option = document.createElement("option");
         option.value = "stoic";
-        option.textContent = "🗿 Stoic Narration";
+        option.textContent = "ðŸ—¿ Stoic Narration";
         presetSelect.appendChild(option);
     }
 
@@ -3056,7 +3057,7 @@ console.log(
             updateSliderLabels();
         }
 
-        console.log("🗿 Stoic Narration activated");
+        console.log("ðŸ—¿ Stoic Narration activated");
     });
 
 })();
@@ -3091,7 +3092,7 @@ console.log(
 
         if (status) {
             status.textContent =
-                "⏳ Creating Davis voice preview...";
+                "â³ Creating Davis voice preview...";
         }
 
         const text =
@@ -3141,7 +3142,7 @@ console.log(
 
             if (status) {
                 status.textContent =
-                    "▶️ Davis preview ready.";
+                    "â–¶ï¸ Davis preview ready.";
             }
 
             await audioPlayer.play();
@@ -3160,7 +3161,7 @@ console.log(
 
             if (status) {
                 status.textContent =
-                    "❌ Davis preview failed: " +
+                    "âŒ Davis preview failed: " +
                     error.message;
             }
         }
@@ -3241,7 +3242,7 @@ console.log(
     }
 
     console.log(
-        "✅ Davis voice fix loaded."
+        "âœ… Davis voice fix loaded."
     );
 
 })();
@@ -3781,7 +3782,7 @@ console.log(
 </script>
 
 
-<!-- SAFE HISTORY DRAWER INSTALLED -->﻿<style id="safeHistoryDrawerStyle">
+<!-- SAFE HISTORY DRAWER INSTALLED -->ï»¿<style id="safeHistoryDrawerStyle">
 #safeHistoryBtn{position:fixed;left:12px;top:50%;transform:translateY(-50%);z-index:9998;background:#111827;color:white;border:1px solid #374151;border-radius:0 10px 10px 0;padding:12px 9px;cursor:pointer;font-weight:700}
 #safeHistoryBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9997;display:none}
 #safeHistoryBackdrop.open{display:block}
@@ -3794,11 +3795,11 @@ console.log(
 .safeHistoryActions{display:flex;gap:6px;flex-wrap:wrap}
 .safeHistoryActions button{background:#1f2937;color:white;border:1px solid #374151;border-radius:6px;padding:6px 9px;cursor:pointer}
 </style>
-<button id="safeHistoryBtn" type="button">☰ History</button>
+<button id="safeHistoryBtn" type="button">â˜° History</button>
 <div id="safeHistoryBackdrop"></div>
 <aside id="safeHistoryDrawer">
-<button id="safeHistoryClose" type="button">✕</button>
-<h2>🎙️ Voice History</h2>
+<button id="safeHistoryClose" type="button">âœ•</button>
+<h2>ðŸŽ™ï¸ Voice History</h2>
 <div id="safeHistoryList"></div>
 </aside>
 <script id="safeHistoryDrawerScript">
@@ -3822,10 +3823,10 @@ item.innerHTML="<div class='safeHistoryText'></div><div class='safeHistoryAction
 item.querySelector(".safeHistoryText").textContent=x.text||("Generation "+(i+1));
 const a=item.querySelector(".safeHistoryActions");
 if(x.filename){
-const play=document.createElement("button");play.textContent="▶ Play";play.onclick=()=>{const p=document.getElementById("audioPlayer");if(p){p.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);p.load();p.play().catch(()=>{})}};a.appendChild(play);
-const dl=document.createElement("button");dl.textContent="⬇ Download";dl.onclick=()=>{const q=document.createElement("a");q.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);q.download=x.filename;q.click()};a.appendChild(dl);
+const play=document.createElement("button");play.textContent="â–¶ Play";play.onclick=()=>{const p=document.getElementById("audioPlayer");if(p){p.src="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);p.load();p.play().catch(()=>{})}};a.appendChild(play);
+const dl=document.createElement("button");dl.textContent="â¬‡ Download";dl.onclick=()=>{const q=document.createElement("a");q.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);q.download=x.filename;q.click()};a.appendChild(dl);
 }
-const del=document.createElement("button");del.textContent="🗑 Delete";del.onclick=()=>{const h2=history();h2.splice(i,1);localStorage.setItem(KEY,JSON.stringify(h2));render()};a.appendChild(del);
+const del=document.createElement("button");del.textContent="ðŸ—‘ Delete";del.onclick=()=>{const h2=history();h2.splice(i,1);localStorage.setItem(KEY,JSON.stringify(h2));render()};a.appendChild(del);
 list.appendChild(item);
 });
 }
@@ -3835,7 +3836,7 @@ btn.onclick=open;close.onclick=shut;backdrop.onclick=shut;
 console.log("Safe History Drawer installed");
 })();
 </script>
-<!-- SAFE HISTORY DRAWER UPGRADE -->﻿<script id="safeHistoryDrawerUpgrade">
+<!-- SAFE HISTORY DRAWER UPGRADE -->ï»¿<script id="safeHistoryDrawerUpgrade">
 (function(){
   const KEY="myVoiceAI_history_v1";
   const list=document.getElementById("safeHistoryList");
@@ -3919,7 +3920,7 @@ console.log("Safe History Drawer installed");
 
       if(x.filename){
         const play=document.createElement("button");
-        play.textContent="▶ Play";
+        play.textContent="â–¶ Play";
         play.onclick=function(){
           const audio=document.getElementById("audioPlayer");
 
@@ -3932,7 +3933,7 @@ console.log("Safe History Drawer installed");
         actions.appendChild(play);
 
         const download=document.createElement("button");
-        download.textContent="⬇ Download";
+        download.textContent="â¬‡ Download";
         download.onclick=function(){
           const a=document.createElement("a");
           a.href="http://127.0.0.1:8000/audio/"+encodeURIComponent(x.filename);
@@ -3945,14 +3946,14 @@ console.log("Safe History Drawer installed");
       }
 
       const load=document.createElement("button");
-      load.textContent="⚙ Load Settings";
+      load.textContent="âš™ Load Settings";
       load.onclick=function(){
         loadSettings(x);
       };
       actions.appendChild(load);
 
       const del=document.createElement("button");
-      del.textContent="🗑 Delete";
+      del.textContent="ðŸ—‘ Delete";
       del.onclick=function(){
         const h2=getHistory();
         h2.splice(i,1);
@@ -3968,7 +3969,7 @@ console.log("Safe History Drawer installed");
     });
 
     const clear=document.createElement("button");
-    clear.textContent="🧹 Clear History";
+    clear.textContent="ðŸ§¹ Clear History";
     clear.style.width="100%";
     clear.style.marginTop="15px";
     clear.style.padding="10px";
@@ -3998,10 +3999,10 @@ console.log("Safe History Drawer installed");
 
   render();
 
-  console.log("✅ History Drawer upgraded");
+  console.log("âœ… History Drawer upgraded");
 })();
 </script>
-<!-- OLD HISTORY PANEL HIDDEN -->﻿<script id="hideOldHistoryPanel">
+<!-- OLD HISTORY PANEL HIDDEN -->ï»¿<script id="hideOldHistoryPanel">
 (function(){
   function hideOldHistory(){
     const drawer=document.getElementById("safeHistoryDrawer");
@@ -4011,7 +4012,7 @@ console.log("Safe History Drawer installed");
 
       const text=(el.textContent||"").trim();
 
-      if(text==="Voice History" || text==="🕘 Voice History"){
+      if(text==="Voice History" || text==="ðŸ•˜ Voice History"){
         let target=el;
 
         for(let i=0;i<5;i++){
@@ -4040,7 +4041,7 @@ console.log("Safe History Drawer installed");
       }
     });
 
-    console.log("✅ Old History panel hidden. New History drawer preserved.");
+    console.log("âœ… Old History panel hidden. New History drawer preserved.");
   }
 
   if(document.readyState==="loading"){
@@ -4298,6 +4299,8 @@ console.log("Safe History Drawer installed");
 
 })();
 </script>
+
+
 
 
 
