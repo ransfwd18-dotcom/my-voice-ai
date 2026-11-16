@@ -597,9 +597,9 @@ def auto_emotion_detection(text: str):
 
 @app.get("/")
 async def root():
-    return {
-        "message": "My Voice AI backend is running"
-    }
+    return FileResponse(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html")
+    )
 
 
  # ===== CONFIDENCE ENGINE =====
